@@ -30,3 +30,12 @@ CREATE TABLE worldbank (
 );
 
 SELECT * FROM worldbank;
+
+-- Create country new table
+CREATE TABLE country(
+	country VARCHAR,
+	WB VARCHAR (10),
+	KS VARCHAR (10)
+	);
+	
+SELECT * FROM country;
