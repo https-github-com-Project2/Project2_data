@@ -35,6 +35,8 @@ SELECT country, "state", COUNT("ID") AS "Total Kickstarts"
 FROM kickstarter
 GROUP BY country, "state";
 
+select * from kickstarter
+
 -- Find the minimum succesful kickstarts using subquery
 SELECT MIN(count) FROM (SELECT country, "state", COUNT("ID") FROM kickstarter GROUP BY country, "state") AS t
 WHERE "state" = 'successful';
@@ -48,15 +50,51 @@ country.wb=worldbank.country
 select * from country
 
 -- subquery and join
-SELECT country."country", worldbank."year", "Count", worldbank."percapita"
+SELECT country."country", worldbank."year", "total", "goal", worldbank."percapita"
 FROM worldbank
 INNER JOIN country ON
 country."wb"=worldbank."country"
 INNER JOIN 
 	(
-	SELECT country, COUNT("ID") AS "Count", to_char(launched, 'YYYY') as year
+	SELECT country, COUNT("ID") AS "total", ROUND(AVG(goal::numeric),2) AS "goal", to_char(launched, 'YYYY') as year
 	FROM kickstarter
 	WHERE "state"='successful'
+	GROUP BY country, year
+	ORDER BY country, year
+	) AS a
+	ON
+	a."country" = country."ks" 
+	AND 
+	a."year"=worldbank."year";
+	
+-- subquery and join average goal that are successful
+SELECT country."country", worldbank."year", goal, worldbank."percapita"
+FROM worldbank
+INNER JOIN country ON
+country."wb"=worldbank."country"
+INNER JOIN 
+	(
+	SELECT country, COUNT("ID") AS "total", ROUND(AVG(goal::numeric),2) AS "goal", to_char(launched, 'YYYY') as year
+	FROM kickstarter
+	WHERE "state"='successful'
+	GROUP BY country, year
+	ORDER BY country, year
+	) AS a
+	ON
+	a."country" = country."ks" 
+	AND 
+	a."year"=worldbank."year";
+	
+-- subquery and join average goal that are failures
+SELECT country."country", worldbank."year", "total", goal, worldbank."percapita"
+FROM worldbank
+INNER JOIN country ON
+country."wb"=worldbank."country"
+INNER JOIN 
+	(
+	SELECT country, COUNT("ID") AS "total", ROUND(AVG(goal::numeric),2) AS "goal", to_char(launched, 'YYYY') as year
+	FROM kickstarter
+	WHERE "state"='failed'
 	GROUP BY country, year
 	ORDER BY country, year
 	) AS a
