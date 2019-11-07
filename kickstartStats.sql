@@ -1,10 +1,15 @@
 -- Count the number failed and successful kickstarts
-SELECT COUNT("ID") AS "Count"
-FROM kickstarter;
+SELECT country, COUNT("ID") AS "Count", to_char(launched, 'YYYY') as year
+FROM kickstarter
+WHERE "state"='successful'
+GROUP BY country, year
+ORDER BY country, year;
+
 
 -- Total Kick Starter goals
-SELECT SUM(goal) AS "Grand Total"
-FROM kickstarter;
+SELECT country, SUM(goal) AS "Grand Total"
+FROM kickstarter
+GROUP BY country;
 
 -- Average Kick Starter goals
 SELECT ROUND(AVG(goal::numeric),2) AS "Average Goal"
@@ -34,4 +39,30 @@ GROUP BY country, "state";
 SELECT MIN(count) FROM (SELECT country, "state", COUNT("ID") FROM kickstarter GROUP BY country, "state") AS t
 WHERE "state" = 'successful';
 
-SELECT * FROM kickstarter;
+-- Join worlbank and country tables
+SELECT * 
+FROM worldbank
+INNER JOIN country ON
+country.wb=worldbank.country
+
+select * from country
+
+-- subquery and join
+SELECT country."country", worldbank."year", "Count", worldbank."percapita"
+FROM worldbank
+INNER JOIN country ON
+country."wb"=worldbank."country"
+INNER JOIN 
+	(
+	SELECT country, COUNT("ID") AS "Count", to_char(launched, 'YYYY') as year
+	FROM kickstarter
+	WHERE "state"='successful'
+	GROUP BY country, year
+	ORDER BY country, year
+	) AS a
+	ON
+	a."country" = country."ks" 
+	AND 
+	a."year"=worldbank."year";
+	
+	
